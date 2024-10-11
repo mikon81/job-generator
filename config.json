@@ -1,0 +1,33 @@
+{
+	"priorityConfigSettings" : {
+		"type" : "Random",
+		"distributionType" : "Uniform",
+		"distributionParams" : { "lowerBound" : 1, "upperBound" : 5 },  
+		"priority" : 0
+	},
+	"deadlineConfigSettings" : {
+		"type" : "Fixed",
+		"deadline" : 100
+	},
+	"maxRamUsageConfigSettings" : {
+		"type" : "Random_DependentOnPrevious",
+		"distributionType": "Normal",
+		"distributionParams" : { "mean" : 20.5, "sd" : 5 }
+	},
+	"maxTimeslicesNumberConfigSettings" : {
+		"type" : "Random",
+		"distributionType": "Uniform",
+		"distributionParams" : { "lowerBound" : 1, "upperBound" : 10 }, 
+	},
+	"stoppabilityConfigSettings" : {
+		"type" : "Fixed",
+		"isStoppable": true
+	},
+	"migrabilityConfigSettings" : {
+		"type" : "Fixed",
+		"isMigrable": true
+	},
+	
+	"numberOfTasks" : 10,
+	"seed" : 7
+}
