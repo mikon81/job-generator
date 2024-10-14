@@ -26,7 +26,7 @@ import org.json.JSONObject;
  * 
  * @author Michal Konopa
  */
-public class Launcher {
+public final class Launcher {
 
     // logger
     private static final Logger logger = LogManager.getLogger(Launcher.class);

@@ -14,43 +14,86 @@ import org.json.JSONObject;
  * 
  * @author Michal Konopa
  */
-class ConfigSettingsFileReader {
+final class ConfigSettingsFileReader {
+    // constants for fields names in JSON document
+    private static final String JNAME_CONFIG_TYPE = "type";
+    private static final String JNAME_DISTRIBUTION_TYPE = "distributionType";
+    private static final String JNAME_DISTRIBUTION_PARAMS = "distributionParams";
+    
+    private static final String JNAME_PRIORITY_CONFIG_SETTINGS = "priorityConfigSettings";
+    private static final String JNAME_PRIORITY = "priority"; 
+    
+    private static final String JNAME_DEADLINE_CONFIG_SETTINGS = "deadlineConfigSettings";
+    private static final String JNAME_DEADLINE = "deadline";
+    
+    private static final String JNAME_MAXRUMUSAGE_CONFIG_SETTINGS = "maxRamUsageConfigSettings";
+    private static final String JNAME_MAXRUMUSAGE = "maxRamUsage";
+    
+    private static final String JNAME_MAXTIMESLICESNUMBER_CONFIG_SETTINGS = "maxTimeslicesNumberConfigSettings";
+    private static final String JNAME_MAXTIMESLICES_NUMBER = "maxTimeslicesNumber";
+    
+    private static final String JNAME_STOPPABILITY_CONFIG_SETTINGS = "stoppabilityConfigSettings";
+    private static final String JNAME_IS_STOPPABLE = "isStoppable";
+    private static final String JNAME_STOPPABLE_PROBABILITY = "stoppableProbability";
+    
+    private static final String JNAME_MIGRABILITY_CONFIG_SETTINGS = "migrabilityConfigSettings";
+    private static final String JNAME_IS_MIGRABLE = "isMigrable";
+    private static final String JNAME_MIGRABLE_PROBABILITY = "migrableProbability";
+    
+    private static final String JNAME_LOWER_BOUND = "lowerBound"; 
+    private static final String JNAME_UPPER_BOUND = "upperBound"; 
+    
+    private static final String JNAME_CONFIG_TYPE_FIXED = "fixed"; 
+    private static final String JNAME_CONFIG_TYPE_RANDOM = "random";
+    private static final String JNAME_CONFIG_TYPE_NOTDEFINED = "notdefined";
+    private static final String JNAME_CONFIG_TYPE_RANDOM_INDEPENDENT = "randomindependent";
+    private static final String JNAME_CONFIG_TYPE_RANDOM_DEPENDENT_ON_PREVIOUS = "randomdependentonprevious";
+    
+    private static final String JNAME_UNIFORM_DISTR = "uniform";
+    private static final String JNAME_NORMAL_DISTR = "normal";
+    
+    private static final String JNAME_MEAN = "mean";
+    private static final String JNAME_STANDARD_DEVIATION = "sd";
+    
+    private static final String JNAME_NUMBER_OF_TASKS = "numberOfTasks";
+    private static final String JNAME_SEED = "seed";
+    
     
     // reads parameters of Uniform distribution from specified JSON objects 
     private static ConfigSettings.UniformDistributionParams readUniformDistributionParams(JSONObject jsonObj) {
         return new ConfigSettings.UniformDistributionParams(
-                jsonObj.getInt("lowerBound"), 
-                jsonObj.getInt("upperBound")
+                jsonObj.getInt(JNAME_LOWER_BOUND), 
+                jsonObj.getInt(JNAME_UPPER_BOUND)
         );
     }
     
     // reads parameters of Normal distribution from specified JSON objects 
     private static ConfigSettings.NormalDistributionParams readNormalDistributionParams(JSONObject jsonObj) {
         return new ConfigSettings.NormalDistributionParams(
-                jsonObj.getDouble("mean"), 
-                jsonObj.getDouble("sd")
+                jsonObj.getDouble(JNAME_MEAN), 
+                jsonObj.getDouble(JNAME_STANDARD_DEVIATION)
         );
     }
     
     // parses priority config settings
     private static ConfigSettings.PriorityConfigSettings parsePriorityConfigSettings(JSONObject configObjJson) {
-        JSONObject prioritySettingJson = configObjJson.getJSONObject("priorityConfigSettings");
-        String configTypeStr = prioritySettingJson.getString("type");
+        JSONObject prioritySettingJson = configObjJson.getJSONObject(JNAME_PRIORITY_CONFIG_SETTINGS);
+        String configTypeStr = prioritySettingJson.getString(JNAME_CONFIG_TYPE);
 
-        switch (configTypeStr) {
-            case "Fixed" -> {
-                return new ConfigSettings.PriorityConfigSettings(prioritySettingJson.getInt("priority"));
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.PriorityConfigSettings(prioritySettingJson.getInt(JNAME_PRIORITY));
             }
-            case "Random" -> {
-                String distrTypeStr = prioritySettingJson.getString("distributionType");
-                JSONObject distribParamsJson = prioritySettingJson.getJSONObject("distributionParams");
-                switch (distrTypeStr) {
-                    case "Uniform" -> {
+            case JNAME_CONFIG_TYPE_RANDOM -> {
+                String distrTypeStr = prioritySettingJson.getString(JNAME_DISTRIBUTION_TYPE);
+                JSONObject distribParamsJson = prioritySettingJson.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
+                switch (distrTypeStr.toLowerCase()) {
+                    case JNAME_UNIFORM_DISTR -> {
                         return new ConfigSettings.PriorityConfigSettings(
                                 readUniformDistributionParams(distribParamsJson)
                         );
                     }
-                    case "Normal" -> {
+                    case JNAME_NORMAL_DISTR -> {
                         return new ConfigSettings.PriorityConfigSettings(
                                 readNormalDistributionParams(distribParamsJson)
                         );
@@ -66,26 +109,26 @@ class ConfigSettingsFileReader {
     
     // parses deadline config settings
     private static ConfigSettings.DeadlineConfigSettings parseDeadlineConfigSettings(JSONObject configObjJson) {
-        JSONObject deadlineSettingJson = configObjJson.getJSONObject("deadlineConfigSettings");
-        String configTypeStr = deadlineSettingJson.getString("type");
+        JSONObject deadlineSettingJson = configObjJson.getJSONObject(JNAME_DEADLINE_CONFIG_SETTINGS);
+        String configTypeStr = deadlineSettingJson.getString(JNAME_CONFIG_TYPE);
 
-        switch (configTypeStr) {
-            case "NotDefined" -> {
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_NOTDEFINED -> {
                 return new ConfigSettings.DeadlineConfigSettings();
             }
-            case "Fixed" -> {
-                return new ConfigSettings.DeadlineConfigSettings(deadlineSettingJson.getInt("deadline"));
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.DeadlineConfigSettings(deadlineSettingJson.getInt(JNAME_DEADLINE));
             }
-            case "Random" -> {
-                String distrTypeStr = deadlineSettingJson.getString("distributionType");
-                JSONObject distribParamsJson = deadlineSettingJson.getJSONObject("distributionParams");
-                switch (distrTypeStr) {
-                    case "Uniform" -> {
+            case JNAME_CONFIG_TYPE_RANDOM -> {
+                String distrTypeStr = deadlineSettingJson.getString(JNAME_DISTRIBUTION_TYPE);
+                JSONObject distribParamsJson = deadlineSettingJson.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
+                switch (distrTypeStr.toLowerCase()) {
+                    case JNAME_UNIFORM_DISTR -> {
                         return new ConfigSettings.DeadlineConfigSettings(
                                 readUniformDistributionParams(distribParamsJson)
                         );
                     }
-                    case "Normal" -> {
+                    case JNAME_NORMAL_DISTR -> {
                         return new ConfigSettings.DeadlineConfigSettings(
                                 readNormalDistributionParams(distribParamsJson)
                         );
@@ -101,29 +144,29 @@ class ConfigSettingsFileReader {
     
     // parses max RAM usage config settings
     private static ConfigSettings.MaxRamUsageConfigSettings parseMaxRamUsageConfigSettings(JSONObject configObjJson) {
-        JSONObject maxRamUsageSettingJson = configObjJson.getJSONObject("maxRamUsageConfigSettings");
-        String configTypeStr = maxRamUsageSettingJson.getString("type");
+        JSONObject maxRamUsageSettingJson = configObjJson.getJSONObject(JNAME_MAXRUMUSAGE_CONFIG_SETTINGS);
+        String configTypeStr = maxRamUsageSettingJson.getString(JNAME_CONFIG_TYPE);
 
-        switch (configTypeStr) {
-            case "Fixed" -> {
-                return new ConfigSettings.MaxRamUsageConfigSettings(maxRamUsageSettingJson.getInt("maxRamUsage"));
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.MaxRamUsageConfigSettings(maxRamUsageSettingJson.getInt(JNAME_MAXRUMUSAGE));
             }
-            case "Random_Independent", "Random_DependentOnPrevious" -> {
+            case JNAME_CONFIG_TYPE_RANDOM_INDEPENDENT, JNAME_CONFIG_TYPE_RANDOM_DEPENDENT_ON_PREVIOUS -> {
                 ConfigSettings.MaxRamUsageConfigSettings.Type configType
-                        = (configTypeStr.equals("Random_Independent")
+                        = (configTypeStr.toLowerCase().equals(JNAME_CONFIG_TYPE_RANDOM_INDEPENDENT)
                         ? ConfigSettings.MaxRamUsageConfigSettings.Type.Random_Independent
                         : ConfigSettings.MaxRamUsageConfigSettings.Type.Random_DependentOnPrevious);
                 
-                String distrTypeStr = maxRamUsageSettingJson.getString("distributionType");
-                JSONObject distribParamsJson = maxRamUsageSettingJson.getJSONObject("distributionParams");
-                switch (distrTypeStr) {
-                    case "Uniform" -> {
+                String distrTypeStr = maxRamUsageSettingJson.getString(JNAME_DISTRIBUTION_TYPE);
+                JSONObject distribParamsJson = maxRamUsageSettingJson.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
+                switch (distrTypeStr.toLowerCase()) {
+                    case JNAME_UNIFORM_DISTR -> {
                         return new ConfigSettings.MaxRamUsageConfigSettings(
                                 configType,
                                 readUniformDistributionParams(distribParamsJson)
                         );
                     }
-                    case "Normal" -> {
+                    case JNAME_NORMAL_DISTR -> {
                         return new ConfigSettings.MaxRamUsageConfigSettings(
                                 configType,
                                 readNormalDistributionParams(distribParamsJson)
@@ -140,23 +183,23 @@ class ConfigSettingsFileReader {
     
     // parses max number of timeslices config settings
     private static ConfigSettings.MaxTimeslicesNumberConfigSettings parseMaxSlicesNumberConfigSettings(JSONObject configObjJson) {
-        JSONObject maxSlicesNumberSettingJson = configObjJson.getJSONObject("maxTimeslicesNumberConfigSettings");
-        String configTypeStr = maxSlicesNumberSettingJson.getString("type");
+        JSONObject maxSlicesNumberSettingJson = configObjJson.getJSONObject(JNAME_MAXTIMESLICESNUMBER_CONFIG_SETTINGS);
+        String configTypeStr = maxSlicesNumberSettingJson.getString(JNAME_CONFIG_TYPE);
 
-        switch (configTypeStr) {
-            case "Fixed" -> {
-                return new ConfigSettings.MaxTimeslicesNumberConfigSettings(maxSlicesNumberSettingJson.getInt("maxTimeslicesNum"));
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.MaxTimeslicesNumberConfigSettings(maxSlicesNumberSettingJson.getInt(JNAME_MAXTIMESLICES_NUMBER));
             }
-            case "Random" -> {
-                String distrTypeStr = maxSlicesNumberSettingJson.getString("distributionType");
-                JSONObject distribParamsJson = maxSlicesNumberSettingJson.getJSONObject("distributionParams");
-                switch (distrTypeStr) {
-                    case "Uniform" -> {
+            case JNAME_CONFIG_TYPE_RANDOM -> {
+                String distrTypeStr = maxSlicesNumberSettingJson.getString(JNAME_DISTRIBUTION_TYPE);
+                JSONObject distribParamsJson = maxSlicesNumberSettingJson.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
+                switch (distrTypeStr.toLowerCase()) {
+                    case JNAME_UNIFORM_DISTR -> {
                         return new ConfigSettings.MaxTimeslicesNumberConfigSettings(
                                 readUniformDistributionParams(distribParamsJson)
                         );
                     }
-                    case "Normal" -> {
+                    case JNAME_NORMAL_DISTR -> {
                         return new ConfigSettings.MaxTimeslicesNumberConfigSettings(
                                 readNormalDistributionParams(distribParamsJson)
                         );
@@ -172,15 +215,15 @@ class ConfigSettingsFileReader {
     
     // parses stoppability config settings
     private static ConfigSettings.StoppabilityConfigSettings parseStoppabilityConfigSettings(JSONObject configObjJson) {
-        JSONObject stoppabilitySettingJson = configObjJson.getJSONObject("stoppabilityConfigSettings");
-        String configTypeStr = stoppabilitySettingJson.getString("type");
+        JSONObject stoppabilitySettingJson = configObjJson.getJSONObject(JNAME_STOPPABILITY_CONFIG_SETTINGS);
+        String configTypeStr = stoppabilitySettingJson.getString(JNAME_CONFIG_TYPE);
 
-        switch (configTypeStr) {
-            case "Fixed" -> {
-                return new ConfigSettings.StoppabilityConfigSettings(stoppabilitySettingJson.getBoolean("isStoppable"));
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.StoppabilityConfigSettings(stoppabilitySettingJson.getBoolean(JNAME_IS_STOPPABLE));
             }
-            case "Random" -> {
-                return new ConfigSettings.StoppabilityConfigSettings(stoppabilitySettingJson.getDouble("stoppableProbability"));
+            case JNAME_CONFIG_TYPE_RANDOM -> {
+                return new ConfigSettings.StoppabilityConfigSettings(stoppabilitySettingJson.getDouble(JNAME_STOPPABLE_PROBABILITY));
             }
             default ->
                 throw new IllegalArgumentException("Unsupported config type: " + configTypeStr);
@@ -189,15 +232,15 @@ class ConfigSettingsFileReader {
     
     // parses stoppability config settings
     private static ConfigSettings.MigrabilityConfigSettings parseMigrabilityConfigSettings(JSONObject configObjJson) {
-        JSONObject migrabilitySettingsJson = configObjJson.getJSONObject("migrabilityConfigSettings");
-        String configTypeStr = migrabilitySettingsJson.getString("type");
+        JSONObject migrabilitySettingsJson = configObjJson.getJSONObject(JNAME_MIGRABILITY_CONFIG_SETTINGS);
+        String configTypeStr = migrabilitySettingsJson.getString(JNAME_CONFIG_TYPE);
 
-        switch (configTypeStr) {
-            case "Fixed" -> {
-                return new ConfigSettings.MigrabilityConfigSettings(migrabilitySettingsJson.getBoolean("isMigrable"));
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.MigrabilityConfigSettings(migrabilitySettingsJson.getBoolean(JNAME_IS_MIGRABLE));
             }
-            case "Random" -> {
-                return new ConfigSettings.MigrabilityConfigSettings(migrabilitySettingsJson.getDouble("migrableProbability"));
+            case JNAME_CONFIG_TYPE_RANDOM -> {
+                return new ConfigSettings.MigrabilityConfigSettings(migrabilitySettingsJson.getDouble(JNAME_MIGRABLE_PROBABILITY));
             }
             default ->
                 throw new IllegalArgumentException("Unsupported config type: " + configTypeStr);
@@ -224,8 +267,8 @@ class ConfigSettingsFileReader {
         ConfigSettings.StoppabilityConfigSettings stoppabilityConfigSettings = parseStoppabilityConfigSettings(configObjJson);
         ConfigSettings.MigrabilityConfigSettings migrabilityConfigSettings = parseMigrabilityConfigSettings(configObjJson);
         
-        long seed = configObjJson.getLong("seed");
-        int numberOfTasks = configObjJson.getInt("numberOfTasks");
+        long seed = configObjJson.getLong(JNAME_SEED);
+        int numberOfTasks = configObjJson.getInt(JNAME_NUMBER_OF_TASKS);
         
         return new ConfigSettings(
                 priorityConfigSettings, 

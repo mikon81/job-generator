@@ -9,7 +9,7 @@ package jcu.taskgenerator;
  * 
  * @author Michal Konopa
  */
-class Task {
+final class Task {
     static int NO_DEADLINE = -1;
     
     private final int priority;

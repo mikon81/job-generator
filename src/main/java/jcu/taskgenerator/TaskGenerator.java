@@ -17,7 +17,7 @@ import java.util.Random;
  * 
  * @author Michal Konopa
  */
-class TaskGenerator {
+final class TaskGenerator {
     // randomizer
     private static Random randomizer;
     

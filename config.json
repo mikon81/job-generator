@@ -10,7 +10,7 @@
 		"deadline" : 100
 	},
 	"maxRamUsageConfigSettings" : {
-		"type" : "Random_DependentOnPrevious",
+		"type" : "RandomDependentOnPrevious",
 		"distributionType": "Normal",
 		"distributionParams" : { "mean" : 20.5, "sd" : 5 }
 	},
