@@ -17,14 +17,26 @@ final class Task {
     private final boolean isMigrable;
     private final int deadline;
     private final int[] timeslices;
+    private final int cudaCoresNumber;
+    private final double arrivalTime;
 
     
-    public Task(int priority, boolean isStopable, boolean isMigrable, int deadline, int[] timeslices) {
+    public Task(
+            int priority, 
+            boolean isStopable, 
+            boolean isMigrable, 
+            int deadline, 
+            int[] timeslices,
+            int cudaCoresNumber,
+            double arrivalTime
+    ) {
         this.priority = priority;
         this.isStopable = isStopable;
         this.isMigrable = isMigrable;
         this.deadline = deadline;
         this.timeslices = timeslices;
+        this.cudaCoresNumber = cudaCoresNumber;
+        this.arrivalTime = arrivalTime;
     }
 
     /**
@@ -60,6 +72,20 @@ final class Task {
      */
     int[] getTimeslices() {
         return timeslices;
+    }
+
+    /**
+     * @return the arrival time
+     */
+    double getArrivalTime() {
+        return arrivalTime;
+    }
+
+    /**
+     * @return the number of used CUDA cores 
+     */
+    int getCudaCoresNumber() {
+        return cudaCoresNumber;
     }
     
     

@@ -40,6 +40,9 @@ final class ConfigSettingsFileReader {
     private static final String JNAME_IS_MIGRABLE = "isMigrable";
     private static final String JNAME_MIGRABLE_PROBABILITY = "migrableProbability";
     
+    private static final String JNAME_CUDACORES_CONFIG_SETTINGS = "cudaCoresConfigSettings";
+    private static final String JNAME_CORES_NUMBER = "coresNumber"; 
+    
     private static final String JNAME_LOWER_BOUND = "lowerBound"; 
     private static final String JNAME_UPPER_BOUND = "upperBound"; 
     
@@ -51,11 +54,18 @@ final class ConfigSettingsFileReader {
     
     private static final String JNAME_UNIFORM_DISTR = "uniform";
     private static final String JNAME_NORMAL_DISTR = "normal";
+    private static final String JNAME_POISSON_DISTR = "poisson";
     
     private static final String JNAME_MEAN = "mean";
     private static final String JNAME_STANDARD_DEVIATION = "sd";
     
+    private static final String JNAME_POISSON_LAMBDA = "lambda";
+    
     private static final String JNAME_NUMBER_OF_TASKS = "numberOfTasks";
+    
+    private static final String JNAME_TASK_ARRIVAL_CONFIG_SETTINGS = "taskArrivalConfigSettings";
+    private static final String JNAME_ARRIVAL_INTERVAL = "interval";
+    
     private static final String JNAME_SEED = "seed";
     
     
@@ -72,6 +82,13 @@ final class ConfigSettingsFileReader {
         return new ConfigSettings.NormalDistributionParams(
                 jsonObj.getDouble(JNAME_MEAN), 
                 jsonObj.getDouble(JNAME_STANDARD_DEVIATION)
+        );
+    }
+    
+    // reads parameters of Poisson distribution from specified JSON objects 
+    private static ConfigSettings.PoissonDistributionParams readPoissonDistributionParams(JSONObject jsonObj) {
+        return new ConfigSettings.PoissonDistributionParams(
+                jsonObj.getInt(JNAME_POISSON_LAMBDA)
         );
     }
     
@@ -247,6 +264,70 @@ final class ConfigSettingsFileReader {
         }
     }
     
+    // parses CUDA cores
+    private static ConfigSettings.CudaCoresConfigSettings parseCudaCoresConfigSettings(JSONObject configObjJson) {
+        JSONObject cudaCoresConfigSettings = configObjJson.getJSONObject(JNAME_CUDACORES_CONFIG_SETTINGS);
+        String configTypeStr = cudaCoresConfigSettings.getString(JNAME_CONFIG_TYPE);
+
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.CudaCoresConfigSettings(cudaCoresConfigSettings.getInt(JNAME_CORES_NUMBER));
+            }
+            case JNAME_CONFIG_TYPE_RANDOM -> {
+                String distrTypeStr = cudaCoresConfigSettings.getString(JNAME_DISTRIBUTION_TYPE);
+                JSONObject distribParamsJson = cudaCoresConfigSettings.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
+                switch (distrTypeStr.toLowerCase()) {
+                    case JNAME_UNIFORM_DISTR -> {
+                        return new ConfigSettings.CudaCoresConfigSettings(
+                                readUniformDistributionParams(distribParamsJson)
+                        );
+                    }
+                    case JNAME_NORMAL_DISTR -> {
+                        return new ConfigSettings.CudaCoresConfigSettings(
+                                readNormalDistributionParams(distribParamsJson)
+                        );
+                    }
+                    default ->
+                        throw new IllegalArgumentException("Unsupported distribution type: " + distrTypeStr);
+                }
+            }
+            default ->
+                throw new IllegalArgumentException("Unsupported config type: " + configTypeStr);
+        }
+    }
+    
+    // parses task arrival config settings
+    private static ConfigSettings.TaskArrivalConfigSettings parseTaskArrivalConfigSettings(JSONObject configObjJson) {
+        JSONObject taskArrivalSettingJson = configObjJson.getJSONObject(JNAME_TASK_ARRIVAL_CONFIG_SETTINGS);
+        String configTypeStr = taskArrivalSettingJson.getString(JNAME_CONFIG_TYPE);
+
+        switch (configTypeStr.toLowerCase()) {
+            case JNAME_CONFIG_TYPE_FIXED -> {
+                return new ConfigSettings.TaskArrivalConfigSettings(taskArrivalSettingJson.getInt(JNAME_ARRIVAL_INTERVAL));
+            }
+            case JNAME_CONFIG_TYPE_RANDOM -> {
+                String distrTypeStr = taskArrivalSettingJson.getString(JNAME_DISTRIBUTION_TYPE);
+                JSONObject distribParamsJson = taskArrivalSettingJson.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
+                switch (distrTypeStr.toLowerCase()) {
+                    case JNAME_UNIFORM_DISTR -> {
+                        return new ConfigSettings.TaskArrivalConfigSettings(
+                                readUniformDistributionParams(distribParamsJson)
+                        );
+                    }
+                    case JNAME_POISSON_DISTR -> {
+                        return new ConfigSettings.TaskArrivalConfigSettings(
+                                readPoissonDistributionParams(distribParamsJson)
+                        );
+                    }
+                    default ->
+                        throw new IllegalArgumentException("Unsupported distribution type: " + distrTypeStr);
+                }
+            }
+            default ->
+                throw new IllegalArgumentException("Unsupported config type: " + configTypeStr);
+        }
+    }
+    
     /**
      * Reads configuration JSON file of specified name from current directory,
      * parses it and returns object of corresponding configuration settings.
@@ -266,9 +347,11 @@ final class ConfigSettingsFileReader {
         ConfigSettings.MaxTimeslicesNumberConfigSettings maxTimeslicesNumberConfigSettings = parseMaxSlicesNumberConfigSettings(configObjJson);
         ConfigSettings.StoppabilityConfigSettings stoppabilityConfigSettings = parseStoppabilityConfigSettings(configObjJson);
         ConfigSettings.MigrabilityConfigSettings migrabilityConfigSettings = parseMigrabilityConfigSettings(configObjJson);
+        ConfigSettings.CudaCoresConfigSettings cudaCoresConfigSettings = parseCudaCoresConfigSettings(configObjJson);
         
         long seed = configObjJson.getLong(JNAME_SEED);
         int numberOfTasks = configObjJson.getInt(JNAME_NUMBER_OF_TASKS);
+        ConfigSettings.TaskArrivalConfigSettings taskArrivalConfigSettings = parseTaskArrivalConfigSettings(configObjJson);
         
         return new ConfigSettings(
                 priorityConfigSettings, 
@@ -276,8 +359,10 @@ final class ConfigSettingsFileReader {
                 maxRamUsageConfigSettings, 
                 maxTimeslicesNumberConfigSettings, 
                 stoppabilityConfigSettings, 
-                migrabilityConfigSettings, 
-                numberOfTasks, 
+                migrabilityConfigSettings,
+                cudaCoresConfigSettings,
+                numberOfTasks,
+                taskArrivalConfigSettings,
                 seed
         );
     }

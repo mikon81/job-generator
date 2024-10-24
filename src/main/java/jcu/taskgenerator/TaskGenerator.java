@@ -11,15 +11,19 @@ import java.util.Random;
 
 /**
  * Generator of tasks.
- * 
- * Tasks are generated according to specified configuration settings by the usage
- * of Java standard classes.
- * 
+ *
+ * Tasks are generated according to specified configuration settings by the
+ * usage of Java standard classes.
+ *
  * @author Michal Konopa
  */
 final class TaskGenerator {
+
     // randomizer
     private static Random randomizer;
+    
+    // last task arrival time
+    private static double lastTaskArrivalTime = 0;
     
     // returns the task's priority
     private static int getPriority(ConfigSettings.PriorityConfigSettings prioritySettings) {
@@ -30,12 +34,69 @@ final class TaskGenerator {
             case Random -> {
                 ConfigSettings.PriorityConfigSettings.DistributionType distribType = prioritySettings.getDistributionType();
                 switch (distribType) {
-                    case Uniform:
+                    case Uniform -> {
                         ConfigSettings.UniformDistributionParams uniformParams = prioritySettings.getUniformDistributionParams();
                         return randomizer.nextInt(uniformParams.getLowerBound(), uniformParams.getUpperBound() + 1);
-                    case Normal:
+                    }
+                    case Normal -> {
                         ConfigSettings.NormalDistributionParams normalDistributionParams
                                 = prioritySettings.getNormalDistributionParams();
+                        return Math.abs(
+                                Math.round(
+                                        (int) randomizer.nextGaussian(
+                                                normalDistributionParams.getMean(),
+                                                normalDistributionParams.getSd()
+                                        )
+                                )
+                        );
+                    }
+                    default ->
+                        throw new IllegalStateException("Unsupported type of priority distribution type: " + distribType);
+                }
+            }
+            default ->
+                throw new IllegalStateException("Unsupported type of priority config type: " + prioritySettings.getType());
+        }
+    }
+
+    private static boolean getStoppable(ConfigSettings.StoppabilityConfigSettings stoppabilityConfigSettings) {
+        if (stoppabilityConfigSettings.getType() == ConfigSettings.StoppabilityConfigSettings.Type.Fixed) {
+            return stoppabilityConfigSettings.isStoppable();
+        }
+        return randomizer.nextFloat() < stoppabilityConfigSettings.getStoppableProbability();
+    }
+
+    private static boolean getMigrable(ConfigSettings.MigrabilityConfigSettings migrabilityConfigSettings) {
+        if (migrabilityConfigSettings.getType() == ConfigSettings.MigrabilityConfigSettings.Type.Fixed) {
+            return migrabilityConfigSettings.isMigrable();
+        }
+        return randomizer.nextFloat() < migrabilityConfigSettings.getMigrableProbability();
+    }
+
+    private static int getDeadline(ConfigSettings.DeadlineConfigSettings deadlineSettings) {
+        int deadline = 0;
+
+        ConfigSettings.DeadlineConfigSettings.Type deadlineType = deadlineSettings.getType();
+        switch (deadlineType) {
+            case Fixed ->
+                deadline = deadlineSettings.getDeadline();
+            case NotDefined ->
+                deadline = Task.NO_DEADLINE;
+            case Random -> {
+                ConfigSettings.DeadlineConfigSettings.DistributionType deadlineDistributionType
+                        = deadlineSettings.getDistributionType();
+                switch (deadlineDistributionType) {
+                    case Uniform -> {
+                        ConfigSettings.UniformDistributionParams uniformDistributionParams
+                                = deadlineSettings.getUniformDistributionParams();
+                        deadline = randomizer.nextInt(
+                                uniformDistributionParams.getLowerBound(),
+                                uniformDistributionParams.getUpperBound() + 1
+                        );
+                    }
+                    case Normal -> {
+                        ConfigSettings.NormalDistributionParams normalDistributionParams
+                                = deadlineSettings.getNormalDistributionParams();
                         Math.abs(
                                 Math.round(
                                         (int) randomizer.nextGaussian(
@@ -44,84 +105,30 @@ final class TaskGenerator {
                                         )
                                 )
                         );
-                    default:
-                        throw new IllegalStateException("Unsupported type of priority distribution type: " + distribType);
-                }
-            }
-            default ->
-                throw new IllegalStateException("Unsupported type of priority config type: " + prioritySettings.getType());
-        }
-    }
-    
-    private static boolean getStoppable(ConfigSettings.StoppabilityConfigSettings stoppabilityConfigSettings) {
-        if (stoppabilityConfigSettings.getType() == ConfigSettings.StoppabilityConfigSettings.Type.Fixed) {
-            return stoppabilityConfigSettings.isStoppable();
-        }
-        return randomizer.nextFloat() < stoppabilityConfigSettings.getStoppableProbability();
-    }
-    
-    private static boolean getMigrable(ConfigSettings.MigrabilityConfigSettings migrabilityConfigSettings) {
-        if (migrabilityConfigSettings.getType() == ConfigSettings.MigrabilityConfigSettings.Type.Fixed) {
-            return migrabilityConfigSettings.isMigrable();
-        }
-        return randomizer.nextFloat() < migrabilityConfigSettings.getMigrableProbability();
-    }
-    
-    private static int getDeadline(ConfigSettings.DeadlineConfigSettings deadlineSettings) {
-        int deadline = 0;
-        
-        ConfigSettings.DeadlineConfigSettings.Type deadlineType = deadlineSettings.getType();
-        switch (deadlineType) {
-            case Fixed -> deadline = deadlineSettings.getDeadline();
-            case NotDefined -> deadline = Task.NO_DEADLINE;
-            case Random -> {
-                ConfigSettings.DeadlineConfigSettings.DistributionType deadlineDistributionType 
-                        = deadlineSettings.getDistributionType();
-                switch (deadlineDistributionType) {
-                    case Uniform -> {
-                        ConfigSettings.UniformDistributionParams uniformDistributionParams 
-                                = deadlineSettings.getUniformDistributionParams(); 
-                        deadline = randomizer.nextInt(
-                                uniformDistributionParams.getLowerBound(), 
-                                uniformDistributionParams.getUpperBound()+1
-                        );
-                    }
-                    case Normal ->
-                    {
-                        ConfigSettings.NormalDistributionParams normalDistributionParams 
-                                = deadlineSettings.getNormalDistributionParams();
-                        Math.abs(
-                            Math.round(
-                                    (int) randomizer.nextGaussian(
-                                        normalDistributionParams.getMean(),
-                                        normalDistributionParams.getSd()
-                                )
-                            )
-                        );
                     }
                     default -> {
                         throw new IllegalStateException("Unsupported type of deadline distribution type: " + deadlineDistributionType);
-                    }   
+                    }
                 }
             }
             default -> {
                 throw new IllegalStateException("Unsupported type of deadline type: " + deadlineType);
             }
-                
+
         }
 
         return deadline;
     }
-    
+
     // returns number of timeslices
     private static int getTimeslicesNum(
             ConfigSettings.MaxTimeslicesNumberConfigSettings maxTimeslicesNumberSettings
     ) {
-        if ( maxTimeslicesNumberSettings.getType() == ConfigSettings.MaxTimeslicesNumberConfigSettings.Type.Fixed ) {
+        if (maxTimeslicesNumberSettings.getType() == ConfigSettings.MaxTimeslicesNumberConfigSettings.Type.Fixed) {
             return maxTimeslicesNumberSettings.getMaxTimeslicesNum();
         }
-        
-        switch ( maxTimeslicesNumberSettings.getDistributionType() ) {
+
+        switch (maxTimeslicesNumberSettings.getDistributionType()) {
             case Uniform -> {
                 ConfigSettings.UniformDistributionParams uniformParams = maxTimeslicesNumberSettings.getUniformDistributionParams();
                 return randomizer.nextInt(
@@ -131,10 +138,10 @@ final class TaskGenerator {
             case Normal -> {
                 ConfigSettings.NormalDistributionParams normalParams = maxTimeslicesNumberSettings.getNormalDistributionParams();
                 return Math.abs(
-                        Math.round((int)randomizer.nextGaussian(
-                                normalParams.getMean(), 
+                        Math.round((int) randomizer.nextGaussian(
+                                normalParams.getMean(),
                                 normalParams.getSd()
-                            )
+                        )
                         )
                 );
             }
@@ -145,16 +152,16 @@ final class TaskGenerator {
                 );
         }
     }
-    
+
     private static void fillFixedValueTimeslaces(int[] timeslaces, int ramUsage) {
         for (int tsId = 0; tsId < timeslaces.length; tsId++) {
             timeslaces[tsId] = ramUsage;
         }
     }
-    
+
     private static void fillRandomIndependentTimeslaces(
-        int[] timeslaces,
-        ConfigSettings.MaxRamUsageConfigSettings maxRamUsageConfigSettings
+            int[] timeslaces,
+            ConfigSettings.MaxRamUsageConfigSettings maxRamUsageConfigSettings
     ) {
         switch (maxRamUsageConfigSettings.getDistributionType()) {
             case Uniform -> {
@@ -179,10 +186,11 @@ final class TaskGenerator {
                     );
                 }
             }
-            default -> throw new IllegalArgumentException("Unsupported distribution type of maximal RAM usage: " + maxRamUsageConfigSettings.getDistributionType());
+            default ->
+                throw new IllegalArgumentException("Unsupported distribution type of maximal RAM usage: " + maxRamUsageConfigSettings.getDistributionType());
         }
     }
-    
+
     private static void fillRandomDependentOnPreviousTimeslaces(
             int[] timeslices,
             ConfigSettings.MaxRamUsageConfigSettings maxRamUsageConfigSettings
@@ -236,14 +244,14 @@ final class TaskGenerator {
             }
         }
     }
-    
+
     private static int[] getTimeslices(
             ConfigSettings.MaxTimeslicesNumberConfigSettings maxTimeslicesNumberSettings,
             ConfigSettings.MaxRamUsageConfigSettings maxRamUsageConfigSettings
     ) {
         int timeslicesNum = getTimeslicesNum(maxTimeslicesNumberSettings);
         int[] timeslices = new int[timeslicesNum];
-        
+
         ConfigSettings.MaxRamUsageConfigSettings.Type type = maxRamUsageConfigSettings.getType();
 
         // RAM usage in the first timeslot
@@ -264,6 +272,67 @@ final class TaskGenerator {
         return timeslices;
     }
     
+    private static int getCudaCoresNumber(ConfigSettings.CudaCoresConfigSettings cudaCoresConfigSettings) {
+        switch (cudaCoresConfigSettings.getType()) {
+            case Fixed -> {
+                return cudaCoresConfigSettings.getCoresNumber();
+            }
+            case Random -> {
+                ConfigSettings.CudaCoresConfigSettings.DistributionType distribType = cudaCoresConfigSettings.getDistributionType();
+                switch (distribType) {
+                    case Uniform -> {
+                        ConfigSettings.UniformDistributionParams uniformParams = cudaCoresConfigSettings.getUniformDistributionParams();
+                        return randomizer.nextInt(uniformParams.getLowerBound(), uniformParams.getUpperBound() + 1);
+                    }
+                    case Normal -> {
+                        ConfigSettings.NormalDistributionParams normalDistributionParams
+                                = cudaCoresConfigSettings.getNormalDistributionParams();
+                        return Math.abs(
+                                Math.round(
+                                        (int) randomizer.nextGaussian(
+                                                normalDistributionParams.getMean(),
+                                                normalDistributionParams.getSd()
+                                        )
+                                )
+                        );
+                    }
+                    default ->
+                        throw new IllegalStateException("Unsupported type of priority distribution type: " + distribType);
+                }
+            }
+            default ->
+                throw new IllegalStateException("Unsupported type of priority config type: " + cudaCoresConfigSettings.getType());
+        }
+    }
+    
+    private static double getTaskArrival(ConfigSettings.TaskArrivalConfigSettings taskArrivalConfigSettings) {
+        switch (taskArrivalConfigSettings.getType()) {
+            case Fixed -> {
+                lastTaskArrivalTime += taskArrivalConfigSettings.getInterval();
+            }
+            case Random -> {
+                ConfigSettings.TaskArrivalConfigSettings.DistributionType distribType = taskArrivalConfigSettings.getDistributionType();
+                switch (distribType) {
+                    case Uniform -> {
+                        ConfigSettings.UniformDistributionParams uniformParams = taskArrivalConfigSettings.getUniformDistributionParams();
+                        lastTaskArrivalTime += randomizer.nextInt(uniformParams.getLowerBound(), uniformParams.getUpperBound() + 1);
+                    }
+                    case Poisson -> {
+                        ConfigSettings.PoissonDistributionParams poissonDistributionParams
+                                = taskArrivalConfigSettings.getPoissonDistributionParams();
+                        lastTaskArrivalTime += (-Math.log(1.0 - Math.random()) / ((double) poissonDistributionParams.getLambda()));
+                    }
+                    default ->
+                        throw new IllegalStateException("Unsupported type of priority distribution type: " + distribType);
+                }
+            }
+            default ->
+                throw new IllegalStateException("Unsupported type of priority config type: " + taskArrivalConfigSettings.getType());
+        }
+        
+        return lastTaskArrivalTime;
+    }
+
     // generates new task according to the specified settings
     private static Task generateTask(ConfigSettings configSettings) {
         int priority = getPriority(configSettings.getPriorityConfigSettings());
@@ -274,27 +343,28 @@ final class TaskGenerator {
                 configSettings.getMaxTimeslicesNumberConfigSettings(),
                 configSettings.getMaxRamUsageConfigSettings()
         );
-        
-        return new Task(priority, isStoppable, isMigrable, deadline, timeslices);
+        int cudaCoresNumber = getCudaCoresNumber(configSettings.getCudaCoresConfigSettings());
+        double taskArrival = getTaskArrival(configSettings.getTaskArrivalConfigSettings());
+
+        return new Task(priority, isStoppable, isMigrable, deadline, timeslices, cudaCoresNumber, taskArrival);
     }
-    
+
     /**
      * Generates and returns collection of tasks according to the specified
      * configuration settings.
-     * 
+     *
      * @param configSettings config settings to use for tasks generation
      * @return collection of generated tasks
      */
     static Collection<Task> generate(ConfigSettings configSettings) {
         randomizer = new Random(configSettings.getSeed());
         List<Task> tasks = new LinkedList();
-        
-        for ( int taskId = 0; taskId < configSettings.getNumberOfTasks(); taskId++ ) {
+
+        for (int taskId = 0; taskId < configSettings.getNumberOfTasks(); taskId++) {
             tasks.add(generateTask(configSettings));
         }
-        
+
         return tasks;
     }
-    
-    
+
 }

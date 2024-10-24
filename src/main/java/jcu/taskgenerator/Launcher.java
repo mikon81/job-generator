@@ -67,28 +67,10 @@ public final class Launcher {
             Collection<Task> tasks = TaskGenerator.generate(configSettings);
             logger.info("Tasks successfully generated.");
             
-            writeTasks(tasks);
+            TasksJsonWriter.writeTasks(tasks);
             logger.info("Tasks written into the output file.");
         } catch (Exception ex) {
              logger.error(ex);
-        }
-    }
-    
-    // writes specified tasks into the "tasks.json" file in the current directory
-    static private void writeTasks(Collection<Task> tasks) throws IOException {
-        JSONArray taskArrJson = new JSONArray();
-        try (FileWriter taskFileWriter = new FileWriter("tasks.json")) {
-            for ( var task : tasks ) {
-                JSONObject taskJson = new JSONObject();
-                taskJson.put("priority", task.getPriority());
-                taskJson.put("isStoppable", task.isStopable());
-                taskJson.put("isMigrable", task.isMigrable());
-                taskJson.put("deadline", task.getDeadline());
-                taskJson.put("timeslices", task.getTimeslices());
-                
-                taskArrJson.put(taskJson);
-            }
-            taskArrJson.write(taskFileWriter);
         }
     }
 }
