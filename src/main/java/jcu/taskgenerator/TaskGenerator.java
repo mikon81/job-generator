@@ -41,7 +41,7 @@ final class TaskGenerator {
                     case Normal -> {
                         ConfigSettings.NormalDistributionParams normalDistributionParams
                                 = prioritySettings.getNormalDistributionParams();
-                        return Math.abs(
+                        return Math.max(1,
                                 Math.round(
                                         (int) randomizer.nextGaussian(
                                                 normalDistributionParams.getMean(),
@@ -97,7 +97,7 @@ final class TaskGenerator {
                     case Normal -> {
                         ConfigSettings.NormalDistributionParams normalDistributionParams
                                 = deadlineSettings.getNormalDistributionParams();
-                        Math.abs(
+                        Math.max(1,
                                 Math.round(
                                         (int) randomizer.nextGaussian(
                                                 normalDistributionParams.getMean(),
@@ -137,7 +137,7 @@ final class TaskGenerator {
             }
             case Normal -> {
                 ConfigSettings.NormalDistributionParams normalParams = maxTimeslicesNumberSettings.getNormalDistributionParams();
-                return Math.abs(
+                return Math.max(1,
                         Math.round((int) randomizer.nextGaussian(
                                 normalParams.getMean(),
                                 normalParams.getSd()
@@ -224,20 +224,28 @@ final class TaskGenerator {
         for (int tmId = 1; tmId < timeslices.length; tmId++) {
             switch (distrType) {
                 case Uniform -> {
+                    ConfigSettings.UniformDistributionParams uniformParams = maxRamUsageConfigSettings.getUniformDistributionParams();
+                    int intervalLen = uniformParams.getUpperBound() - uniformParams.getLowerBound();
+                    int lowerBound = timeslices[tmId - 1] - intervalLen/2;
+                    int upperBound = timeslices[tmId - 1] + intervalLen/2;
+                    
                     timeslices[tmId] = randomizer.nextInt(
-                            0,
-                            timeslices[tmId - 1]
+                            Math.max(0,lowerBound),
+                            upperBound
                     );
                 }
                 case Normal -> {
-                    timeslices[tmId] = Math.abs(
+                    ConfigSettings.NormalDistributionParams normalParams = maxRamUsageConfigSettings.getNormalDistributionParams();
+                    
+                    timeslices[tmId] = Math.max(0,
                             Math.round(
                                     (int) randomizer.nextGaussian(
                                             timeslices[tmId - 1],
-                                            timeslices[tmId - 1] * 0.1
+                                            normalParams.getSd()
                                     )
                             )
                     );
+                    
                 }
                 default ->
                     throw new IllegalArgumentException("Unsupported distribution type of maximal RAM usage: " + distrType);
@@ -287,7 +295,7 @@ final class TaskGenerator {
                     case Normal -> {
                         ConfigSettings.NormalDistributionParams normalDistributionParams
                                 = cudaCoresConfigSettings.getNormalDistributionParams();
-                        return Math.abs(
+                        return Math.max(1,
                                 Math.round(
                                         (int) randomizer.nextGaussian(
                                                 normalDistributionParams.getMean(),

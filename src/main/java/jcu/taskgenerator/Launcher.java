@@ -4,20 +4,16 @@
 
 package jcu.taskgenerator;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collection;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Generator of tasks running in cloud environment.
  * 
  * Eeach task has specific properties including but not limited to:
  * - duration
- * - RAM maximal consumption
+ * - memory maximal consumption
  * - total number of generated tasks
  *  
  * Properties of generated task can be controlled by generator's configuration
