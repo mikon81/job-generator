@@ -1,0 +1,38 @@
+{
+	"priorityConfigSettings" : {
+		"type" : "Random",
+		"distributionType" : "Uniform",
+		"distributionParams" : { "lowerBound" : 1, "upperBound" : 5 },  
+		"priority" : 0
+	},
+	"deadlineConfigSettings" : {
+		"type" : "Fixed",
+		"deadline" : 100
+	},
+	"maxRamUsageConfigSettings" : {
+		"type" : "RandomDependentOnPrevious",
+		"distributionType": "Normal",
+		"distributionParams" : { "mean" : 2000, "sd" : 50 }
+	},
+	"maxTimeslicesNumberConfigSettings" : {
+		"type" : "Random",		
+		"distributionType": "Normal",
+		"distributionParams" : { "mean" : 5, "sd" : 2 }, 
+	},
+	"stoppabilityConfigSettings" : {
+		"type" : "Fixed",
+		"isStoppable": true
+	},
+	"cudaCoresConfigSettings" : {
+		"type" : "Fixed",
+		"coresNumber" : 100
+	},
+	"jobsArrivalConfigSettings" : {
+		"type" : "Random",
+		"distributionType": "Poisson",
+		"distributionParams" : { "lambda" : 10 }
+	},
+	
+	"numberOfJobs" : 1000,
+	"seed" : 41
+}

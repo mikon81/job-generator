@@ -2,23 +2,25 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
 
-package jcu.taskgenerator;
+package jcu.jobgenerator;
 
 import java.util.Collection;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * Generator of tasks running in cloud environment.
+ * Generator of jobs running in cloud environment.
  * 
- * Eeach task has specific properties including but not limited to:
- * - duration
+ * Eeach job has specific properties including but not limited to:
+ * - priority
+ * - duration [in time units]
  * - memory maximal consumption
- * - total number of generated tasks
+ * - CUDA cores consumption
+ * - indication, if job is interruptible 
  *  
- * Properties of generated task can be controlled by generator's configuration
- * JSON file residing in generator's directory. Generated tasks are written into
- * the output JSON file insided current directory. 
+ * Properties of generated job can be controlled by generator's configuration
+ * JSON file residing in generator's directory. Generated jobs are written into
+ * the output JSON file inside the current directory. 
  * 
  * @author Michal Konopa
  */
@@ -30,12 +32,12 @@ public final class Launcher {
     // prints help info about the program 
     private static void printHelp() {
         final String helpString = """
-            TASK GENERATOR generates tasks and writes them into the output JSON
+            JOB GENERATOR generates jobs and writes them into the output JSON
                            file in the current directory. Properties of each
-                           generated task and the total number of generated task
+                           generated job and the total number of generated jobs
                            is set in the input configuration file.
-            usage: task-generator[version] <configuration JSON file>
-            output: tasks.json in the current directory   
+            usage: job-generator[version] <configuration JSON file>
+            output: job.json in the current directory   
             """;
         
         System.out.println(helpString);
@@ -45,7 +47,7 @@ public final class Launcher {
     /**
      * Launches the generator.
      * 
-     * Properties of the generated tasks will be set according to the configuration
+     * Properties of the generated jobs will be set according to the configuration
      * JSON file as specified by the only parameter. If there is no parameter or 
      * multiple parametres supplied, help will be printed onto the standard output.
      * 
@@ -60,11 +62,11 @@ public final class Launcher {
         try {
             ConfigSettings configSettings = ConfigSettingsFileReader.read(args[0]);
             
-            Collection<Task> tasks = TaskGenerator.generate(configSettings);
-            logger.info("Tasks successfully generated.");
+            Collection<Job> tasks = JobGenerator.generate(configSettings);
+            logger.info("Jobs successfully generated.");
             
-            TasksJsonWriter.writeTasks(tasks);
-            logger.info("Tasks written into the output file.");
+            JobsJsonWriter.writeJobs(tasks);
+            logger.info("Jobs written into the output file.");
         } catch (Exception ex) {
              logger.error(ex);
         }

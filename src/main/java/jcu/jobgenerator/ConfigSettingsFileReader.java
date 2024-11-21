@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package jcu.taskgenerator;
+package jcu.jobgenerator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,10 +36,6 @@ final class ConfigSettingsFileReader {
     private static final String JNAME_IS_STOPPABLE = "isStoppable";
     private static final String JNAME_STOPPABLE_PROBABILITY = "stoppableProbability";
     
-    private static final String JNAME_MIGRABILITY_CONFIG_SETTINGS = "migrabilityConfigSettings";
-    private static final String JNAME_IS_MIGRABLE = "isMigrable";
-    private static final String JNAME_MIGRABLE_PROBABILITY = "migrableProbability";
-    
     private static final String JNAME_CUDACORES_CONFIG_SETTINGS = "cudaCoresConfigSettings";
     private static final String JNAME_CORES_NUMBER = "coresNumber"; 
     
@@ -61,9 +57,9 @@ final class ConfigSettingsFileReader {
     
     private static final String JNAME_POISSON_LAMBDA = "lambda";
     
-    private static final String JNAME_NUMBER_OF_TASKS = "numberOfTasks";
+    private static final String JNAME_NUMBER_OF_JOBS = "numberOfJobs";
     
-    private static final String JNAME_TASK_ARRIVAL_CONFIG_SETTINGS = "taskArrivalConfigSettings";
+    private static final String JNAME_JOBS_ARRIVAL_CONFIG_SETTINGS = "jobsArrivalConfigSettings";
     private static final String JNAME_ARRIVAL_INTERVAL = "interval";
     
     private static final String JNAME_SEED = "seed";
@@ -247,23 +243,6 @@ final class ConfigSettingsFileReader {
         }
     }
     
-    // parses stoppability config settings
-    private static ConfigSettings.MigrabilityConfigSettings parseMigrabilityConfigSettings(JSONObject configObjJson) {
-        JSONObject migrabilitySettingsJson = configObjJson.getJSONObject(JNAME_MIGRABILITY_CONFIG_SETTINGS);
-        String configTypeStr = migrabilitySettingsJson.getString(JNAME_CONFIG_TYPE);
-
-        switch (configTypeStr.toLowerCase()) {
-            case JNAME_CONFIG_TYPE_FIXED -> {
-                return new ConfigSettings.MigrabilityConfigSettings(migrabilitySettingsJson.getBoolean(JNAME_IS_MIGRABLE));
-            }
-            case JNAME_CONFIG_TYPE_RANDOM -> {
-                return new ConfigSettings.MigrabilityConfigSettings(migrabilitySettingsJson.getDouble(JNAME_MIGRABLE_PROBABILITY));
-            }
-            default ->
-                throw new IllegalArgumentException("Unsupported config type: " + configTypeStr);
-        }
-    }
-    
     // parses CUDA cores
     private static ConfigSettings.CudaCoresConfigSettings parseCudaCoresConfigSettings(JSONObject configObjJson) {
         JSONObject cudaCoresConfigSettings = configObjJson.getJSONObject(JNAME_CUDACORES_CONFIG_SETTINGS);
@@ -296,26 +275,26 @@ final class ConfigSettingsFileReader {
         }
     }
     
-    // parses task arrival config settings
-    private static ConfigSettings.TaskArrivalConfigSettings parseTaskArrivalConfigSettings(JSONObject configObjJson) {
-        JSONObject taskArrivalSettingJson = configObjJson.getJSONObject(JNAME_TASK_ARRIVAL_CONFIG_SETTINGS);
-        String configTypeStr = taskArrivalSettingJson.getString(JNAME_CONFIG_TYPE);
+    // parses job arrival config settings
+    private static ConfigSettings.JobArrivalConfigSettings parseJobArrivalConfigSettings(JSONObject configObjJson) {
+        JSONObject jobArrivalSettingJson = configObjJson.getJSONObject(JNAME_JOBS_ARRIVAL_CONFIG_SETTINGS);
+        String configTypeStr = jobArrivalSettingJson.getString(JNAME_CONFIG_TYPE);
 
         switch (configTypeStr.toLowerCase()) {
             case JNAME_CONFIG_TYPE_FIXED -> {
-                return new ConfigSettings.TaskArrivalConfigSettings(taskArrivalSettingJson.getInt(JNAME_ARRIVAL_INTERVAL));
+                return new ConfigSettings.JobArrivalConfigSettings(jobArrivalSettingJson.getInt(JNAME_ARRIVAL_INTERVAL));
             }
             case JNAME_CONFIG_TYPE_RANDOM -> {
-                String distrTypeStr = taskArrivalSettingJson.getString(JNAME_DISTRIBUTION_TYPE);
-                JSONObject distribParamsJson = taskArrivalSettingJson.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
+                String distrTypeStr = jobArrivalSettingJson.getString(JNAME_DISTRIBUTION_TYPE);
+                JSONObject distribParamsJson = jobArrivalSettingJson.getJSONObject(JNAME_DISTRIBUTION_PARAMS);
                 switch (distrTypeStr.toLowerCase()) {
                     case JNAME_UNIFORM_DISTR -> {
-                        return new ConfigSettings.TaskArrivalConfigSettings(
+                        return new ConfigSettings.JobArrivalConfigSettings(
                                 readUniformDistributionParams(distribParamsJson)
                         );
                     }
                     case JNAME_POISSON_DISTR -> {
-                        return new ConfigSettings.TaskArrivalConfigSettings(
+                        return new ConfigSettings.JobArrivalConfigSettings(
                                 readPoissonDistributionParams(distribParamsJson)
                         );
                     }
@@ -346,12 +325,11 @@ final class ConfigSettingsFileReader {
         ConfigSettings.MaxRamUsageConfigSettings maxRamUsageConfigSettings = parseMaxRamUsageConfigSettings(configObjJson);
         ConfigSettings.MaxTimeslicesNumberConfigSettings maxTimeslicesNumberConfigSettings = parseMaxSlicesNumberConfigSettings(configObjJson);
         ConfigSettings.StoppabilityConfigSettings stoppabilityConfigSettings = parseStoppabilityConfigSettings(configObjJson);
-        ConfigSettings.MigrabilityConfigSettings migrabilityConfigSettings = parseMigrabilityConfigSettings(configObjJson);
         ConfigSettings.CudaCoresConfigSettings cudaCoresConfigSettings = parseCudaCoresConfigSettings(configObjJson);
         
         long seed = configObjJson.getLong(JNAME_SEED);
-        int numberOfTasks = configObjJson.getInt(JNAME_NUMBER_OF_TASKS);
-        ConfigSettings.TaskArrivalConfigSettings taskArrivalConfigSettings = parseTaskArrivalConfigSettings(configObjJson);
+        int numberOfJobs = configObjJson.getInt(JNAME_NUMBER_OF_JOBS);
+        ConfigSettings.JobArrivalConfigSettings jobArrivalConfigSettings = parseJobArrivalConfigSettings(configObjJson);
         
         return new ConfigSettings(
                 priorityConfigSettings, 
@@ -359,10 +337,9 @@ final class ConfigSettingsFileReader {
                 maxRamUsageConfigSettings, 
                 maxTimeslicesNumberConfigSettings, 
                 stoppabilityConfigSettings, 
-                migrabilityConfigSettings,
                 cudaCoresConfigSettings,
-                numberOfTasks,
-                taskArrivalConfigSettings,
+                numberOfJobs,
+                jobArrivalConfigSettings,
                 seed
         );
     }

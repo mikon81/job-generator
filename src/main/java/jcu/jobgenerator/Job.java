@@ -2,29 +2,27 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package jcu.taskgenerator;
+package jcu.jobgenerator;
 
 /**
- * Properties of generated task.
+ * Properties of generated job.
  * 
  * @author Michal Konopa
  */
-final class Task {
+final class Job {
     static int NO_DEADLINE = -1;
     
     private final int priority;
     private final boolean isStopable;
-    private final boolean isMigrable;
     private final int deadline;
     private final int[] timeslices;
     private final int cudaCoresNumber;
     private final double arrivalTime;
 
     
-    public Task(
+    public Job(
             int priority, 
             boolean isStopable, 
-            boolean isMigrable, 
             int deadline, 
             int[] timeslices,
             int cudaCoresNumber,
@@ -32,7 +30,6 @@ final class Task {
     ) {
         this.priority = priority;
         this.isStopable = isStopable;
-        this.isMigrable = isMigrable;
         this.deadline = deadline;
         this.timeslices = timeslices;
         this.cudaCoresNumber = cudaCoresNumber;
@@ -51,13 +48,6 @@ final class Task {
      */
     boolean isStopable() {
         return isStopable;
-    }
-
-    /**
-     * @return the isMigrable
-     */
-    boolean isMigrable() {
-        return isMigrable;
     }
 
     /**

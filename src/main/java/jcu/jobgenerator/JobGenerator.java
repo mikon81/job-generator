@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package jcu.taskgenerator;
+package jcu.jobgenerator;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -10,22 +10,22 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Generator of tasks.
+ * Generator of jobs.
  *
- * Tasks are generated according to specified configuration settings by the
+ * Jobs are generated according to specified configuration settings by the
  * usage of Java standard classes.
  *
  * @author Michal Konopa
  */
-final class TaskGenerator {
+final class JobGenerator {
 
     // randomizer
     private static Random randomizer;
     
-    // last task arrival time
-    private static double lastTaskArrivalTime = 0;
+    // last job arrival time
+    private static double lastJobArrivalTime = 0;
     
-    // returns the task's priority
+    // returns the job's priority
     private static int getPriority(ConfigSettings.PriorityConfigSettings prioritySettings) {
         switch (prioritySettings.getType()) {
             case Fixed -> {
@@ -81,7 +81,7 @@ final class TaskGenerator {
             case Fixed ->
                 deadline = deadlineSettings.getDeadline();
             case NotDefined ->
-                deadline = Task.NO_DEADLINE;
+                deadline = Job.NO_DEADLINE;
             case Random -> {
                 ConfigSettings.DeadlineConfigSettings.DistributionType deadlineDistributionType
                         = deadlineSettings.getDistributionType();
@@ -313,66 +313,65 @@ final class TaskGenerator {
         }
     }
     
-    private static double getTaskArrival(ConfigSettings.TaskArrivalConfigSettings taskArrivalConfigSettings) {
-        switch (taskArrivalConfigSettings.getType()) {
+    private static double getJobArrival(ConfigSettings.JobArrivalConfigSettings jobArrivalConfigSettings) {
+        switch (jobArrivalConfigSettings.getType()) {
             case Fixed -> {
-                lastTaskArrivalTime += taskArrivalConfigSettings.getInterval();
+                lastJobArrivalTime += jobArrivalConfigSettings.getInterval();
             }
             case Random -> {
-                ConfigSettings.TaskArrivalConfigSettings.DistributionType distribType = taskArrivalConfigSettings.getDistributionType();
+                ConfigSettings.JobArrivalConfigSettings.DistributionType distribType = jobArrivalConfigSettings.getDistributionType();
                 switch (distribType) {
                     case Uniform -> {
-                        ConfigSettings.UniformDistributionParams uniformParams = taskArrivalConfigSettings.getUniformDistributionParams();
-                        lastTaskArrivalTime += randomizer.nextInt(uniformParams.getLowerBound(), uniformParams.getUpperBound() + 1);
+                        ConfigSettings.UniformDistributionParams uniformParams = jobArrivalConfigSettings.getUniformDistributionParams();
+                        lastJobArrivalTime += randomizer.nextInt(uniformParams.getLowerBound(), uniformParams.getUpperBound() + 1);
                     }
                     case Poisson -> {
                         ConfigSettings.PoissonDistributionParams poissonDistributionParams
-                                = taskArrivalConfigSettings.getPoissonDistributionParams();
-                        lastTaskArrivalTime += (-Math.log(1.0 - Math.random()) / ((double) poissonDistributionParams.getLambda()));
+                                = jobArrivalConfigSettings.getPoissonDistributionParams();
+                        lastJobArrivalTime += (-Math.log(1.0 - Math.random()) / ((double) poissonDistributionParams.getLambda()));
                     }
                     default ->
                         throw new IllegalStateException("Unsupported type of priority distribution type: " + distribType);
                 }
             }
             default ->
-                throw new IllegalStateException("Unsupported type of priority config type: " + taskArrivalConfigSettings.getType());
+                throw new IllegalStateException("Unsupported type of priority config type: " + jobArrivalConfigSettings.getType());
         }
         
-        return lastTaskArrivalTime;
+        return lastJobArrivalTime;
     }
 
-    // generates new task according to the specified settings
-    private static Task generateTask(ConfigSettings configSettings) {
+    // generates new job according to the specified settings
+    private static Job generateJob(ConfigSettings configSettings) {
         int priority = getPriority(configSettings.getPriorityConfigSettings());
         boolean isStoppable = getStoppable(configSettings.getStoppabilityConfigSettings());
-        boolean isMigrable = getMigrable(configSettings.getMigrabilityConfigSettings());
         int deadline = getDeadline(configSettings.getDeadlineConfigSettings());
         int[] timeslices = getTimeslices(
                 configSettings.getMaxTimeslicesNumberConfigSettings(),
                 configSettings.getMaxRamUsageConfigSettings()
         );
         int cudaCoresNumber = getCudaCoresNumber(configSettings.getCudaCoresConfigSettings());
-        double taskArrival = getTaskArrival(configSettings.getTaskArrivalConfigSettings());
+        double jobArrival = getJobArrival(configSettings.getJobArrivalConfigSettings());
 
-        return new Task(priority, isStoppable, isMigrable, deadline, timeslices, cudaCoresNumber, taskArrival);
+        return new Job(priority, isStoppable, deadline, timeslices, cudaCoresNumber, jobArrival);
     }
 
     /**
-     * Generates and returns collection of tasks according to the specified
+     * Generates and returns collection of jobs according to the specified
      * configuration settings.
      *
-     * @param configSettings config settings to use for tasks generation
-     * @return collection of generated tasks
+     * @param configSettings config settings to use for jobs generation
+     * @return collection of generated jobs
      */
-    static Collection<Task> generate(ConfigSettings configSettings) {
+    static Collection<Job> generate(ConfigSettings configSettings) {
         randomizer = new Random(configSettings.getSeed());
-        List<Task> tasks = new LinkedList();
+        List<Job> jobs = new LinkedList();
 
-        for (int taskId = 0; taskId < configSettings.getNumberOfTasks(); taskId++) {
-            tasks.add(generateTask(configSettings));
+        for (int jobId = 0; jobId < configSettings.getNumberOfJobs(); jobId++) {
+            jobs.add(generateJob(configSettings));
         }
 
-        return tasks;
+        return jobs;
     }
 
 }

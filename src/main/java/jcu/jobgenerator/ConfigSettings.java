@@ -2,12 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package jcu.taskgenerator;
+package jcu.jobgenerator;
 
 /**
  * Configuration settings.
  *
- * Stores mainly properties of the generated tasks.
+ * Stores mainly properties of the generated jobs.
  *
  *
  * @author Michal Konopa
@@ -93,7 +93,7 @@ final class ConfigSettings {
 
         /**
          * Creates new instance of Poisson distribution parameters. Lambda
-         * parameter means number of arrival tasks per 1 munute.
+         * parameter means number of arrival jobs per 1 munute.
          *
          * @param lambda lambda
          */
@@ -111,15 +111,15 @@ final class ConfigSettings {
     }
 
     /**
-     * All config settings concerning tasks priority.
+     * All config settings concerning jobs priority.
      */
     static final class PriorityConfigSettings {
 
         /**
-         * Type of task priority.
+         * Type of job priority.
          *
-         * Fixed - one concrete value of priority is defined for all the tasks
-         * Random - each task has random value of priority assigned
+         * Fixed - one concrete value of priority is defined for all the jobs
+         * Random - each job has random value of priority assigned
          */
         static enum Type {
             Fixed, Random
@@ -237,16 +237,16 @@ final class ConfigSettings {
     }
 
     /**
-     * All config settings concerning task's deadline.
+     * All config settings concerning job's deadline.
      */
     static final class DeadlineConfigSettings {
 
         /**
-         * Type of task deadline.
+         * Type of job deadline.
          *
-         * NotDefined - there is NO deadline dedined for any task Fixed - one
-         * concrete value of deadline is defined for all the tasks Random - each
-         * task has random value of deadline assigned
+         * NotDefined - there is NO deadline dedined for any job Fixed - one
+         * concrete value of deadline is defined for all the jobs Random - each
+         * job has random value of deadline assigned
          */
         static enum Type {
             NotDefined, Fixed, Random
@@ -382,7 +382,7 @@ final class ConfigSettings {
     static final class MaxRamUsageConfigSettings {
 
         /**
-         * Type of task's maximal RAM usage in each timeslot.
+         * Type of job's maximal RAM usage in each timeslot.
          *
          * Fixed - fixed value for all timeslots Independent - in each timeslot
          * the maximal RAM usage is completely random. DependentOnPrevious -
@@ -401,7 +401,7 @@ final class ConfigSettings {
             Uniform, Normal
         };
 
-        // type of RAM usage in each task's timeslot 
+        // type of RAM usage in each job's timeslot 
         private final Type type;
 
         // probability distibution type for maximal RAM usage in each timeslot
@@ -531,9 +531,9 @@ final class ConfigSettings {
     static final class MaxTimeslicesNumberConfigSettings {
 
         /**
-         * Type of task's maximal RAM usage in each timeslot.
+         * Type of job's maximal RAM usage in each timeslot.
          *
-         * Fixed - fixed value for all tasks Random - random for each task
+         * Fixed - fixed value for all jobs Random - random for each job
          */
         static enum Type {
             Fixed, Random
@@ -547,7 +547,7 @@ final class ConfigSettings {
             Uniform, Normal
         };
 
-        // type of RAM usage in each task's timeslot 
+        // type of RAM usage in each job's timeslot 
         private final Type type;
 
         // probability distibution type for maximal RAM usage in each timeslot
@@ -655,14 +655,14 @@ final class ConfigSettings {
     }
 
     /**
-     * Configuration settings for task's stoppability.
+     * Configuration settings for job's stoppability.
      */
     static final class StoppabilityConfigSettings {
 
         /**
-         * Type of task's stoppability.
+         * Type of job's stoppability.
          *
-         * Fixed - fixed value for all tasks Random - random for each task
+         * Fixed - fixed value for all jobs Random - random for each job
          */
         static enum Type {
             Fixed, Random
@@ -671,17 +671,17 @@ final class ConfigSettings {
         // type of config setting 
         private final Type type;
 
-        // probability, that a task is stoppable
+        // probability, that a job is stoppable
         private final double stoppableProbability;
 
-        // indicates whether the tasks are stoppable
+        // indicates whether the jobs are stoppable
         private final boolean isStoppable;
 
         /**
          * Creates new instance of stoppability config settings with the
          * Type.Fixed type.
          *
-         * @param isStoppable indicates, whether a task is stoppable
+         * @param isStoppable indicates, whether a job is stoppable
          */
         StoppabilityConfigSettings(boolean isStoppable) {
             this.type = Type.Fixed;
@@ -691,9 +691,9 @@ final class ConfigSettings {
 
         /**
          * Creates new instance of stoppability config settings with the
-         * specified value of probability, that the task is stoppable.
+         * specified value of probability, that the job is stoppable.
          *
-         * @param stoppableProbability probability, that the task is stoppable
+         * @param stoppableProbability probability, that the job is stoppable
          * @throws IllegalArgumentException if the migrableProbability is out of
          * interval of (0,1)
          */
@@ -711,7 +711,7 @@ final class ConfigSettings {
         }
 
         /**
-         * @return if the tasks are stoppable
+         * @return if the jobs are stoppable
          */
         boolean isStoppable() {
             return isStoppable;
@@ -733,14 +733,14 @@ final class ConfigSettings {
     }
 
     /**
-     * Configuration settings for task's migrability.
+     * Configuration settings for job's migrability.
      */
     static final class MigrabilityConfigSettings {
 
         /**
-         * Type of task's migrability.
+         * Type of job's migrability.
          *
-         * Fixed - fixed value for all tasks Random - random for each task
+         * Fixed - fixed value for all jobs Random - random for each job
          */
         static enum Type {
             Fixed, Random
@@ -749,17 +749,17 @@ final class ConfigSettings {
         // type of config setting 
         private final Type type;
 
-        // probability, that a task is migrable
+        // probability, that a job is migrable
         private final double migrableProbability;
 
-        // indicates whether the task is migrable
+        // indicates whether the job is migrable
         private final boolean isMigrable;
 
         /**
          * Creates new instance of migrability config settings with the
          * Type.Fixed type.
          *
-         * @param isMigrable indicates, whether a task is migrable
+         * @param isMigrable indicates, whether a job is migrable
          */
         MigrabilityConfigSettings(boolean isMigrable) {
             this.type = Type.Fixed;
@@ -769,9 +769,9 @@ final class ConfigSettings {
 
         /**
          * Creates new instance of migrability config settings with the
-         * specified value of probability, that the task is migrable.
+         * specified value of probability, that the job is migrable.
          *
-         * @param migrableProbability probability, that the task is migrable
+         * @param migrableProbability probability, that the job is migrable
          * @throws IllegalArgumentException if the migrableProbability is out of
          * interval of (0,1)
          */
@@ -789,7 +789,7 @@ final class ConfigSettings {
         }
 
         /**
-         * @return if the tasks are migrable
+         * @return if the jobs are migrable
          */
         boolean isMigrable() {
             return isMigrable;
@@ -817,7 +817,7 @@ final class ConfigSettings {
 
         /**
          * Fixed - one concrete value of CUDA cores number are same for all the
-         * tasks Random - each task has random value of CUDA cores number
+         * jobs Random - each job has random value of CUDA cores number
          */
         static enum Type {
             Fixed, Random
@@ -933,15 +933,15 @@ final class ConfigSettings {
     }
 
     /**
-     * All config settings concerning tasks arrival into the input queue.
+     * All config settings concerning jobs arrival into the input queue.
      */
-    static final class TaskArrivalConfigSettings {
+    static final class JobArrivalConfigSettings {
 
         /**
-         * Type of task arrival.
+         * Type of job arrival.
          *
-         * Fixed - all tasks will arrive in regular time interval Random - each
-         * task arrival will be random
+         * Fixed - all jobs will arrive in regular time interval Random - each
+         * job arrival will be random
          */
         static enum Type {
             Fixed, Random
@@ -967,17 +967,17 @@ final class ConfigSettings {
         private final int interval;
 
         /**
-         * Creates new instance of task arrival settings with Type.Fixed type
+         * Creates new instance of job arrival settings with Type.Fixed type
          * and specified value of regular time interval[in minutes]. Value of
          * probability distribution function type will be se to
          * <code>null</code>
          *
-         * @param interval value of regular time interval[in minutes] of task
+         * @param interval value of regular time interval[in minutes] of job
          * arrival
          * @throws IllegalArgumentException if interval type is less or equal to
          * 0
          */
-        TaskArrivalConfigSettings(int interval) {
+        JobArrivalConfigSettings(int interval) {
             this.type = Type.Fixed;
             this.distributionType = null;
             this.uniformDistributionParams = null;
@@ -986,13 +986,13 @@ final class ConfigSettings {
         }
 
         /**
-         * Creates new instance of task arrival settings with Type.Random type
+         * Creates new instance of job arrival settings with Type.Random type
          * and uniform distribution type with specified parameters. Value of
          * interval will be set to 0 - it should never be used.
          *
          * @param uniformDistrParams parameters of uniform distribution
          */
-        TaskArrivalConfigSettings(UniformDistributionParams uniformDistrParams) {
+        JobArrivalConfigSettings(UniformDistributionParams uniformDistrParams) {
             this.type = Type.Random;
             this.distributionType = DistributionType.Uniform;
             this.uniformDistributionParams = uniformDistrParams;
@@ -1001,13 +1001,13 @@ final class ConfigSettings {
         }
 
         /**
-         * Creates new instance of task arrival settings with Type.Random type
+         * Creates new instance of job arrival settings with Type.Random type
          * and Poisson distribution type with specified parameters. Value of
          * interval will be set to 0 - it should never be used.
          *
          * @param poissonDistrParams parameters of Poisson distribution
          */
-        TaskArrivalConfigSettings(PoissonDistributionParams poissonDistrParams) {
+        JobArrivalConfigSettings(PoissonDistributionParams poissonDistrParams) {
             this.type = Type.Random;
             this.distributionType = DistributionType.Poisson;
             this.uniformDistributionParams = null;
@@ -1074,18 +1074,15 @@ final class ConfigSettings {
     // stoppable config settings
     private final StoppabilityConfigSettings stoppabilityConfigSettings;
 
-    // migrable config settings
-    private final MigrabilityConfigSettings migrabilityConfigSettings;
-
     // CUDA cores config settings
     private final CudaCoresConfigSettings cudaCoresConfigSettings;
 
-    // Settings for all set of generated tasks.
-    // number of generated tasks
+    // Settings for all set of generated jobs.
+    // number of generated jobs
     private final int numberOfTasks;
 
-    // task arrival config settings
-    private final TaskArrivalConfigSettings taskArrivalConfigSettings;
+    // job arrival config settings
+    private final JobArrivalConfigSettings jobArrivalConfigSettings;
 
     // seed for internal randomizer
     private final long seed;
@@ -1098,10 +1095,9 @@ final class ConfigSettings {
      * @param maxRamUsageConfigSettings
      * @param maxTimeslicesNumberConfigSettings
      * @param stoppabilityConfigSettings
-     * @param migrabilityConfigSettings
      * @param cudaCoresConfigSettings 
      * @param numberOfTasks
-     * @param taskArrivalConfigSettings
+     * @param jobArrivalConfigSettings
      * @param seed
      */
     ConfigSettings(
@@ -1110,10 +1106,9 @@ final class ConfigSettings {
             MaxRamUsageConfigSettings maxRamUsageConfigSettings,
             MaxTimeslicesNumberConfigSettings maxTimeslicesNumberConfigSettings,
             StoppabilityConfigSettings stoppabilityConfigSettings,
-            MigrabilityConfigSettings migrabilityConfigSettings,
             CudaCoresConfigSettings cudaCoresConfigSettings,
             int numberOfTasks,
-            TaskArrivalConfigSettings taskArrivalConfigSettings,
+            JobArrivalConfigSettings jobArrivalConfigSettings,
             long seed
     ) {
         this.priorityConfigSettings = priorityConfigSettings;
@@ -1121,25 +1116,24 @@ final class ConfigSettings {
         this.maxRamUsageConfigSettings = maxRamUsageConfigSettings;
         this.maxTimeslicesNumberConfigSettings = maxTimeslicesNumberConfigSettings;
         this.stoppabilityConfigSettings = stoppabilityConfigSettings;
-        this.migrabilityConfigSettings = migrabilityConfigSettings;
         this.cudaCoresConfigSettings = cudaCoresConfigSettings;
         this.numberOfTasks = numberOfTasks;
-        this.taskArrivalConfigSettings = taskArrivalConfigSettings;
+        this.jobArrivalConfigSettings = jobArrivalConfigSettings;
         this.seed = seed;
     }
 
     /**
-     * @return the number of tasks
+     * @return the number of jobs
      */
-    int getNumberOfTasks() {
+    int getNumberOfJobs() {
         return numberOfTasks;
     }
 
     /**
-     * @return task arrival config settings
+     * @return job arrival config settings
      */
-    TaskArrivalConfigSettings getTaskArrivalConfigSettings() {
-        return taskArrivalConfigSettings;
+    JobArrivalConfigSettings getJobArrivalConfigSettings() {
+        return jobArrivalConfigSettings;
     }
 
     /**
@@ -1182,13 +1176,6 @@ final class ConfigSettings {
      */
     StoppabilityConfigSettings getStoppabilityConfigSettings() {
         return stoppabilityConfigSettings;
-    }
-
-    /**
-     * @return the migrabilityConfigSettings
-     */
-    MigrabilityConfigSettings getMigrabilityConfigSettings() {
-        return migrabilityConfigSettings;
     }
 
     /**
