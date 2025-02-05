@@ -77,6 +77,4 @@ final class Job {
     int getCudaCoresNumber() {
         return cudaCoresNumber;
     }
-    
-    
 }
