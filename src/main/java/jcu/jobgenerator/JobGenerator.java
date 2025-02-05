@@ -328,7 +328,7 @@ final class JobGenerator {
                     case Poisson -> {
                         ConfigSettings.PoissonDistributionParams poissonDistributionParams
                                 = jobArrivalConfigSettings.getPoissonDistributionParams();
-                        lastJobArrivalTime += (-Math.log(1.0 - Math.random()) / ((double) poissonDistributionParams.getLambda()));
+                        lastJobArrivalTime += (-Math.log(1.0 - randomizer.nextDouble(1.0)) / ((double) poissonDistributionParams.getLambda()));
                     }
                     default ->
                         throw new IllegalStateException("Unsupported type of priority distribution type: " + distribType);
